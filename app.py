@@ -376,32 +376,84 @@ if st.button("Fetch current season games"):
     except Exception as error:
         st.error(f"Could not fetch live games: {error}")
 
-if "live_completed" in st.session_state:
-    live_completed = st.session_state["live_completed"]
-    live_upcoming = st.session_state["live_upcoming"]
 
-    # Add current-season final scores to the historical dataset.
-    games = pd.concat(
+if "live_completed" in st.session_state:
+    live_completed = st.session_state["live_completed"].copy()
+    live_upcoming = st.session_state["live_upcoming"].copy()
+
+    # Make sure live results have a season value.
+    current_season = datetime.now().year
+
+    if "season" not in live_completed.columns:
+        live_completed["season"] = current_season
+
+    live_completed["season"] = (
+        pd.to_numeric(live_completed["season"], errors="coerce")
+        .fillna(current_season)
+        .astype(int)
+    )
+
+    games["season"] = pd.to_numeric(
+        games["season"], errors="coerce"
+    ).astype("Int64")
+
+    live_completed["season"] = live_completed["season"].astype("Int64")
+
+    # Combine historical games and current-season final scores.
+    combined = pd.concat(
         [games, live_completed],
         ignore_index=True,
         sort=False,
     )
 
-    # Remove duplicate games if the refresh is repeated.
-    if "id" in games.columns:
-        games = games.drop_duplicates(subset=["id"], keep="last")
+    # Normalize game IDs so numeric/string representations match.
+    if "id" in combined.columns:
+        combined["id"] = combined["id"].astype("string")
+
+        with_id = combined[combined["id"].notna()]
+        without_id = combined[combined["id"].isna()]
+
+        with_id = with_id.drop_duplicates(
+            subset=["id"], keep="last"
+        )
+
+        combined = pd.concat(
+            [with_id, without_id],
+            ignore_index=True,
+            sort=False,
+        )
+
+    # Restore chronological order before calculating Elo ratings.
+    if "start_date" in combined.columns:
+        combined["start_date"] = pd.to_datetime(
+            combined["start_date"], errors="coerce", utc=True
+        )
+        combined = combined.sort_values(
+            ["start_date", "season"], na_position="last"
+        )
+
+    games = combined.reset_index(drop=True)
+
+    # Show the number of games used for the current season.
+    season_games = games[games["season"] == current_season]
+    season_completed = season_games.dropna(
+        subset=["home_points", "away_points"]
+    )
 
     st.success(
-        f"Live data loaded: {len(live_completed)} games with scores "
-        f"and {len(live_upcoming)} scheduled games."
+        f"Live data loaded. {len(season_completed)} games with scores "
+        f"are included for {current_season}; "
+        f"{len(live_upcoming)} scheduled games remain."
     )
 
     st.caption(
-        "Last fetched: " + st.session_state["live_fetch_time"]
+        "Games are combined with historical data and duplicate IDs "
+        "are removed before ratings are recalculated."
     )
 
     if not live_upcoming.empty:
         st.subheader("Upcoming Games")
+
         display_columns = [
             column
             for column in [
@@ -410,14 +462,19 @@ if "live_completed" in st.session_state:
             if column in live_upcoming.columns
         ]
 
+        upcoming_display = live_upcoming[display_columns].copy()
+
+        if "start_date" in upcoming_display.columns:
+            upcoming_display = upcoming_display.sort_values(
+                "start_date", na_position="last"
+            )
+
         st.dataframe(
-            live_upcoming[display_columns].sort_values(
-                "start_date"
-            ) if "start_date" in display_columns
-            else live_upcoming[display_columns],
+            upcoming_display,
             use_container_width=True,
             hide_index=True,
         )
+
 
 rankings, _, _ = calculate_ratings(games)
 
