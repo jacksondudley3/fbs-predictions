@@ -452,28 +452,83 @@ if "live_completed" in st.session_state:
     )
 
     if not live_upcoming.empty:
+        
         st.subheader("Upcoming Games")
 
-        display_columns = [
-            column
-            for column in [
-                "start_date", "week", "away_team", "home_team"
-            ]
-            if column in live_upcoming.columns
-        ]
+        # Create a lookup table of team ratings.
+        rating_lookup = rankings.set_index("Team")["Rating"].to_dict()
 
-        upcoming_display = live_upcoming[display_columns].copy()
+        upcoming_display = live_upcoming.copy()
 
+        # Make sure dates are readable.
         if "start_date" in upcoming_display.columns:
+            upcoming_display["start_date"] = pd.to_datetime(
+                upcoming_display["start_date"], errors="coerce"
+            )
             upcoming_display = upcoming_display.sort_values(
                 "start_date", na_position="last"
             )
 
+        # Calculate a prediction for every scheduled game.
+        def predict_game(row):
+            home = str(row["home_team"]).strip()
+            away = str(row["away_team"]).strip()
+
+            home_rating = rating_lookup.get(home, START_RATING)
+            away_rating = rating_lookup.get(away, START_RATING)
+
+            neutral = bool(row.get("neutral_site", False))
+            home_edge = 0 if neutral else HOME_ADVANTAGE_ELO
+
+            # Expected home-team win probability from Elo ratings.
+            rating_diff = home_rating + home_edge - away_rating
+            home_prob = 1 / (1 + 10 ** (-rating_diff / 400))
+
+            # Convert the rating difference to a rough projected margin.
+            projected_margin = rating_diff / 25
+
+            # Estimate total points using a simple baseline.
+            projected_total = 48
+            home_score = round((projected_total + projected_margin) / 2)
+            away_score = round((projected_total - projected_margin) / 2)
+
+            return pd.Series({
+                "Predicted Away Score": max(0, away_score),
+                "Predicted Home Score": max(0, home_score),
+                "Projected Spread (Home)": round(projected_margin, 1),
+                "Home Win Probability": f"{home_prob:.1%}",
+                "Predicted Winner": home if home_prob >= 0.5 else away,
+            })
+
+        predictions = upcoming_display.apply(predict_game, axis=1)
+        upcoming_display = pd.concat(
+            [upcoming_display, predictions], axis=1
+        )
+
+        # Show the most useful columns first.
+        preferred_columns = [
+            "start_date",
+            "week",
+            "away_team",
+            "Predicted Away Score",
+            "home_team",
+            "Predicted Home Score",
+            "Predicted Winner",
+            "Projected Spread (Home)",
+            "Home Win Probability",
+        ]
+
+        display_columns = [
+            col for col in preferred_columns
+            if col in upcoming_display.columns
+        ]
+
         st.dataframe(
-            upcoming_display,
+            upcoming_display[display_columns],
             use_container_width=True,
             hide_index=True,
         )
+
 
 
 rankings, _, _ = calculate_ratings(games)
