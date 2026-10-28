@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import requests
 import streamlit as st
+from datetime import datetime
 
 
 # ----------------------------
@@ -280,7 +281,68 @@ except Exception as error:
     )
     st.stop()
 
+
+st.subheader("Live College Football Data")
+
+if st.button("Fetch current season games"):
+    try:
+        with st.spinner("Fetching games from CollegeFootballData..."):
+            live_completed, live_upcoming = fetch_current_season_games()
+
+            st.session_state["live_completed"] = live_completed
+            st.session_state["live_upcoming"] = live_upcoming
+            st.session_state["live_fetch_time"] = datetime.now().strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+
+    except Exception as error:
+        st.error(f"Could not fetch live games: {error}")
+
+if "live_completed" in st.session_state:
+    live_completed = st.session_state["live_completed"]
+    live_upcoming = st.session_state["live_upcoming"]
+
+    # Add current-season final scores to the historical dataset.
+    games = pd.concat(
+        [games, live_completed],
+        ignore_index=True,
+        sort=False,
+    )
+
+    # Remove duplicate games if the refresh is repeated.
+    if "id" in games.columns:
+        games = games.drop_duplicates(subset=["id"], keep="last")
+
+    st.success(
+        f"Live data loaded: {len(live_completed)} games with scores "
+        f"and {len(live_upcoming)} scheduled games."
+    )
+
+    st.caption(
+        "Last fetched: " + st.session_state["live_fetch_time"]
+    )
+
+    if not live_upcoming.empty:
+        st.subheader("Upcoming Games")
+        display_columns = [
+            column
+            for column in [
+                "start_date", "week", "away_team", "home_team"
+            ]
+            if column in live_upcoming.columns
+        ]
+
+        st.dataframe(
+            live_upcoming[display_columns].sort_values(
+                "start_date"
+            ) if "start_date" in display_columns
+            else live_upcoming[display_columns],
+            use_container_width=True,
+            hide_index=True,
+        )
+
 rankings, _, _ = calculate_ratings(games)
+
 
 if rankings.empty:
     st.error("No valid games were found in the CSV.")
@@ -297,6 +359,81 @@ else:
         "secrets to filter the table to FBS teams. Without it, the table may "
         "include FCS opponents."
     )
+
+
+def fetch_current_season_games():
+    api_key = st.secrets.get("CFBD_API_KEY", "").strip()
+
+    if not api_key:
+        raise ValueError("CFBD_API_KEY is missing from Streamlit Secrets.")
+
+    season = datetime.now().year
+
+    response = requests.get(
+        f"{CFBD_BASE_URL}/games",
+        params={
+            "year": season,
+            "seasonType": "both",
+            "classification": "fbs",
+        },
+        headers={"Authorization": f"Bearer {api_key}"},
+        timeout=30,
+    )
+
+    if response.status_code != 200:
+        raise ValueError(
+            f"CollegeFootballData returned HTTP {response.status_code}. "
+            "Check your API access and usage limits."
+        )
+
+    payload = response.json()
+
+    if not payload:
+        raise ValueError(f"No games were returned for {season}.")
+
+    live = pd.DataFrame(payload)
+
+    # Convert API field names to the names used by the existing model.
+    live = live.rename(
+        columns={
+            "homeTeam": "home_team",
+            "awayTeam": "away_team",
+            "homePoints": "home_points",
+            "awayPoints": "away_points",
+            "neutralSite": "neutral_site",
+            "startDate": "start_date",
+            "seasonType": "season_type",
+        }
+    )
+
+    required = [
+        "home_team",
+        "away_team",
+        "home_points",
+        "away_points",
+    ]
+
+    missing = [column for column in required if column not in live.columns]
+    if missing:
+        raise ValueError(
+            "Unexpected API response; missing fields: " + ", ".join(missing)
+        )
+
+    live["home_points"] = pd.to_numeric(live["home_points"], errors="coerce")
+    live["away_points"] = pd.to_numeric(live["away_points"], errors="coerce")
+
+    # Only final-score games are used to update ratings.
+    completed = live.dropna(
+        subset=["home_points", "away_points"]
+    ).copy()
+
+    # The remaining games are scheduled games without final scores.
+    upcoming = live[
+        live["home_points"].isna() | live["away_points"].isna()
+    ].copy()
+
+    return completed, upcoming
+
 
 rankings = rankings.sort_values("Rating", ascending=False).reset_index(drop=True)
 rankings["Rank"] = np.arange(1, len(rankings) + 1)
