@@ -110,6 +110,84 @@ def get_fbs_teams():
         return None
 
 
+from datetime import datetime
+
+
+def fetch_current_season_games():
+    api_key = st.secrets.get("CFBD_API_KEY", "").strip()
+
+    if not api_key:
+        raise ValueError(
+            "CFBD_API_KEY is missing from Streamlit Secrets."
+        )
+
+    season = datetime.now().year
+
+    response = requests.get(
+        f"{CFBD_BASE_URL}/games",
+        params={
+            "year": season,
+            "seasonType": "both",
+            "classification": "fbs",
+        },
+        headers={"Authorization": f"Bearer {api_key}"},
+        timeout=30,
+    )
+
+    if response.status_code != 200:
+        raise ValueError(
+            f"CollegeFootballData returned HTTP {response.status_code}."
+        )
+
+    payload = response.json()
+
+    if not payload:
+        raise ValueError(f"No games were returned for {season}.")
+
+    live = pd.DataFrame(payload)
+
+    live = live.rename(
+        columns={
+            "homeTeam": "home_team",
+            "awayTeam": "away_team",
+            "homePoints": "home_points",
+            "awayPoints": "away_points",
+            "neutralSite": "neutral_site",
+            "startDate": "start_date",
+            "seasonType": "season_type",
+        }
+    )
+
+    required = [
+        "home_team",
+        "away_team",
+        "home_points",
+        "away_points",
+    ]
+
+    missing = [column for column in required if column not in live.columns]
+    if missing:
+        raise ValueError(
+            "API response missing fields: " + ", ".join(missing)
+        )
+
+    live["home_points"] = pd.to_numeric(
+        live["home_points"], errors="coerce"
+    )
+    live["away_points"] = pd.to_numeric(
+        live["away_points"], errors="coerce"
+    )
+
+    completed = live.dropna(
+        subset=["home_points", "away_points"]
+    ).copy()
+
+    upcoming = live[
+        live["home_points"].isna() | live["away_points"].isna()
+    ].copy()
+
+    return completed, upcoming
+
 # ----------------------------
 # Elo rating calculations
 # ----------------------------
