@@ -455,6 +455,8 @@ if "live_completed" in st.session_state:
         
         st.subheader("Upcoming Games")
 
+        rankings, _, _ = calculate_ratings(games)
+
         # Create a lookup table of team ratings.
         rating_lookup = rankings.set_index("Team")["Rating"].to_dict()
 
