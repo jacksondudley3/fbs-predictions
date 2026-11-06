@@ -535,6 +535,7 @@ if "live_completed" in st.session_state:
         )
 
         # Show the most useful columns first.
+        
         preferred_columns = [
             "start_date",
             "week",
@@ -546,6 +547,19 @@ if "live_completed" in st.session_state:
             "Projected Spread (Home)",
             "Home Win Probability",
         ]
+
+        display_names = {
+            "start_date": "Kickoff (Eastern)",
+            "week": "Week",
+            "away_team": "Away Team",
+            "Predicted Away Score": "Away Score",
+            "home_team": "Home Team",
+            "Predicted Home Score": "Home Score",
+            "Predicted Winner": "Predicted Winner",
+            "Projected Spread (Home)": "Projected Spread",
+            "Home Win Probability": "Home Win Probability",
+        }
+
 
         display_columns = [
             col for col in preferred_columns
