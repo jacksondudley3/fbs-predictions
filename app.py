@@ -705,6 +705,7 @@ if "live_completed" in st.session_state:
                 
                 if column in ("Away Team", "Home Team"):
                     team_key = str(value).strip().lower()
+                    original_team_key = team_key
 
                     team_aliases = {
                         "utsa": "utsa roadrunners",
@@ -765,7 +766,7 @@ if "live_completed" in st.session_state:
                     }
 
                     
-                    team_key = team_aliases.get(team_key, team_key)
+                    team_key = original_team_key
                     
                     logo_url = logo_map.get(team_key, "")
 
