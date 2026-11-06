@@ -624,17 +624,41 @@ if "live_completed" in st.session_state:
         )
         
         # ESPN logo URLs for college football teams.
+        
+        # ESPN logo URLs using ESPN's college football team identifiers.
         def get_team_logo_url(team_name):
-            import re
+            team_slugs = {
+                "Alabama": "alabama",
+                "Auburn": "auburn",
+                "Clemson": "clemson",
+                "Florida": "florida",
+                "Florida State": "florida-state",
+                "Georgia": "georgia",
+                "LSU": "lsu",
+                "Michigan": "michigan",
+                "Michigan State": "michigan-state",
+                "Notre Dame": "notre-dame",
+                "Ohio State": "ohio-state",
+                "Oklahoma": "oklahoma",
+                "Oregon": "oregon",
+                "Penn State": "penn-state",
+                "Tennessee": "tennessee",
+                "Texas": "texas",
+                "Texas A&M": "texas-am",
+                "USC": "usc",
+                "Washington": "washington",
+                "Wisconsin": "wisconsin",
+            }
 
-            slug = re.sub(
-                r"[^a-z0-9]+", "",
-                str(team_name).lower()
-            )
+            slug = team_slugs.get(str(team_name).strip())
+
+            if not slug:
+                return ""
 
             return (
                 f"https://a.espncdn.com/i/teamlogos/ncaa/500/{slug}.png"
             )
+
 
         header_html = "".join(
             f'<th style="text-align:center; padding:8px; '
@@ -651,18 +675,23 @@ if "live_completed" in st.session_state:
             for column, value in row.items():
                 safe_value = html.escape(str(value))
 
+                
                 if column in ("Away Team", "Home Team"):
                     logo_url = get_team_logo_url(value)
 
-                    cell_content = (
-                        f'<img src="{logo_url}" '
-                        f'alt="" width="24" height="24" '
-                        f'style="object-fit:contain; '
-                        f'vertical-align:middle; margin-right:6px;">'
-                        f'{safe_value}'
-                    )
+                    if logo_url:
+                        cell_content = (
+                            f'<img src="{logo_url}" '
+                            f'alt="" width="24" height="24" '
+                            f'style="object-fit:contain; '
+                            f'vertical-align:middle; margin-right:6px;">'
+                            f'{safe_value}'
+                        )
+                    else:
+                        cell_content = safe_value
                 else:
                     cell_content = safe_value
+
 
                 cells_html += (
                     f'<td style="text-align:center; padding:8px; '
