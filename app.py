@@ -687,9 +687,92 @@ if "live_completed" in st.session_state:
 
                 
                 
+                
                 if column in ("Away Team", "Home Team"):
                     team_key = str(value).strip().lower()
+
+                    team_aliases = {
+                        "utsa": "utsa roadrunners",
+                        "southern miss": "southern miss golden eagles",
+                        "smu": "smu mustangs",
+                        "nebraska": "nebraska cornhuskers",
+                        "illinois": "illinois fighting illini",
+                        "new mexico": "new mexico lobos",
+                        "tcu": "tcu horned frogs",
+                        "arizona": "arizona wildcats",
+                        "minnesota": "minnesota golden gophers",
+                        "missouri": "missouri tigers",
+                        "texas": "texas longhorns",
+                        "north carolina": "north carolina tar heels",
+                        "baylor": "baylor bears",
+                        "tulane": "tulane green wave",
+                        "utah": "utah utes",
+                        "purdue": "purdue boilermakers",
+                        "duke": "duke blue devils",
+                        "arkansas": "arkansas razorbacks",
+                        "oklahoma state": "oklahoma state cowboys",
+                        "kansas state": "kansas state wildcats",
+                        "south carolina": "south carolina gamecocks",
+                        "delaware": "delaware fightin blue hens",
+                        "washington": "washington huskies",
+                        "merrimack": "merrimack warriors",
+                        "marshall": "marshall thundering herd",
+                        "alabama": "alabama crimson tide",
+                        "houston": "houston cougars",
+                        "oregon": "oregon ducks",
+                        "kansas": "kansas jayhawks",
+                        "troy": "troy trojans",
+                        "wisconsin": "wisconsin badgers",
+                        "louisiana": "louisiana ragin cajuns",
+                        "kentucky": "kentucky wildcats",
+                        "tennessee": "tennessee volunteers",
+                        "sam houston": "sam houston bearkats",
+                        "miami": "miami hurricanes",
+                        "colorado": "colorado buffaloes",
+                        "iowa": "iowa hawkeyes",
+                        "northwestern": "northwestern wildcats",
+                        "georgia": "georgia bulldogs",
+                        "michigan": "michigan wolverines",
+                        "oklahoma": "oklahoma sooners",
+                        "florida": "florida gators",
+                        "west virginia": "west virginia mountaineers",
+                        "texas tech": "texas tech red raiders",
+                        "utep": "utep miners",
+                        "wyoming": "wyoming cowboys",
+                        "app state": "appalachian state mountaineers",
+                        "miami (fl)": "miami hurricanes",
+                        "miami (oh)": "miami redhawks",
+                        "ole miss": "ole miss rebels",
+                        "ucf": "ucf knights",
+                        "lsu": "lsu tigers",
+                        "usc": "usc trojans",
+                        "ucla": "ucla bruins",
+                    }
+
+                    team_key = team_aliases.get(team_key, team_key)
                     logo_url = logo_map.get(team_key, "")
+
+                    if not logo_url:
+                        matches = [
+                            url for name, url in logo_map.items()
+                            if team_key in name or name in team_key
+                        ]
+                        if len(matches) == 1:
+                            logo_url = matches[0]
+
+                    if logo_url:
+                        cell_content = (
+                            f'<img src="{logo_url}" '
+                            f'alt="" width="24" height="24" '
+                            f'style="object-fit:contain; '
+                            f'vertical-align:middle; margin-right:6px;">'
+                            f'{safe_value}'
+                        )
+                    else:
+                        cell_content = safe_value
+                else:
+                    cell_content = safe_value
+
 
                     if not logo_url:
                         # Try matching a shortened school name.
