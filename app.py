@@ -677,6 +677,7 @@ if "live_completed" in st.session_state:
 
         
         rows_html = ""
+        logo_map = get_team_logo_map()
 
         for _, row in table_data.iterrows():
             cells_html = ""
@@ -685,8 +686,20 @@ if "live_completed" in st.session_state:
                 safe_value = html.escape(str(value))
 
                 
+                
                 if column in ("Away Team", "Home Team"):
-                    logo_url = get_team_logo_url(value)
+                    team_key = str(value).strip().lower()
+                    logo_url = logo_map.get(team_key, "")
+
+                    if not logo_url:
+                        # Try matching a shortened school name.
+                        matches = [
+                            url for name, url in logo_map.items()
+                            if team_key in name or name in team_key
+                        ]
+                        if len(matches) == 1:
+                            logo_url = matches[0]
+
 
                     if logo_url:
                         cell_content = (
