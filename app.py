@@ -627,32 +627,46 @@ if "live_completed" in st.session_state:
         
         # ESPN logo URLs using ESPN's college football team identifiers.
         
-        @st.cache_data(ttl=86400)
         
         @st.cache_data(ttl=86400)
         def get_team_logo_map():
-            api_key = st.secrets.get("CFBD_API_KEY", "")
-
-            if not api_key:
-                return {}
-
             try:
                 response = requests.get(
-                    f"{CFBD_BASE_URL}/teams/fbs",
-                    headers={"Authorization": f"Bearer {api_key}"},
+                    "https://site.api.espn.com/apis/site/v2/sports/"
+                    "football/college-football/teams",
+                    params={"limit": 500},
                     timeout=15,
                 )
                 response.raise_for_status()
-                teams = response.json()
+                payload = response.json()
 
                 logo_map = {}
 
-                for team in teams:
-                    school = team.get("school", "").strip().lower()
-                    logos = team.get("logos") or []
+                for item in payload.get("sports", []):
+                    for league in item.get("leagues", []):
+                        for team in league.get("teams", []):
+                            team_info = team.get("team", {})
+                            logos = team_info.get("logos", [])
 
-                    if school and logos:
-                        logo_map[school] = logos[0]
+                            if not logos:
+                                continue
+
+                            logo_url = logos[0].get("href", "")
+                            if not logo_url:
+                                continue
+
+                            # Index each team by all available ESPN names.
+                            names = [
+                                team_info.get("displayName"),
+                                team_info.get("name"),
+                                team_info.get("shortDisplayName"),
+                                team_info.get("abbreviation"),
+                                team_info.get("location"),
+                            ]
+
+                            for name in names:
+                                if name:
+                                    logo_map[name.strip().lower()] = logo_url
 
                 return logo_map
 
