@@ -481,21 +481,21 @@ if "live_completed" in st.session_state:
         upcoming_display = live_upcoming.copy()
 
 
-# Sort games by kickoff time and display in New York time.
-if "start_date" in upcoming_display.columns:
-    upcoming_display["start_date"] = pd.to_datetime(
-        upcoming_display["start_date"], errors="coerce", utc=True
-    )
-
-    upcoming_display = upcoming_display.sort_values(
-        "start_date", na_position="last"
-    )
-
-    upcoming_display["start_date"] = (
-        upcoming_display["start_date"]
-        .dt.tz_convert("America/New_York")
-        .dt.strftime("%a, %b %-d • %-I:%M %p ET")
-    )
+        # Sort games by kickoff time and display in New York time.
+        if "start_date" in upcoming_display.columns:
+            upcoming_display["start_date"] = pd.to_datetime(
+                upcoming_display["start_date"], errors="coerce", utc=True
+            )
+        
+            upcoming_display = upcoming_display.sort_values(
+                "start_date", na_position="last"
+            )
+        
+            upcoming_display["start_date"] = (
+                upcoming_display["start_date"]
+                .dt.tz_convert("America/New_York")
+                .dt.strftime("%a, %b %-d • %-I:%M %p ET")
+            )
 
 
         # Calculate a prediction for every scheduled game.
