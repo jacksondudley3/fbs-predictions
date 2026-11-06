@@ -572,18 +572,25 @@ if "live_completed" in st.session_state:
 
         
         
-        st.dataframe(
-            upcoming_display[display_columns].rename(columns=display_names)
-            .style.set_properties(**{"text-align": "center"})
+        
+        st.table(
+            upcoming_display[display_columns]
+            .rename(columns=display_names)
+            .style.set_properties(**{
+                "text-align": "center",
+                "vertical-align": "middle",
+            })
             .set_table_styles([
                 {
                     "selector": "th",
-                    "props": [("text-align", "center")],
+                    "props": [
+                        ("text-align", "center"),
+                        ("vertical-align", "middle"),
+                    ],
                 }
-            ]),
-            use_container_width=True,
-            hide_index=True,
+            ])
         )
+
 
 
 
