@@ -641,14 +641,36 @@ if "live_completed" in st.session_state:
             for column in table_data.columns
         )
 
+        
         rows_html = ""
+
         for _, row in table_data.iterrows():
-            cells_html = "".join(
-                f'<td style="text-align:center; padding:8px; '
-                f'border-bottom:1px solid #888;">{value}</td>'
-                for value in row
-            )
+            cells_html = ""
+
+            for column, value in row.items():
+                safe_value = html.escape(str(value))
+
+                if column in ("Away Team", "Home Team"):
+                    logo_url = get_team_logo_url(value)
+
+                    cell_content = (
+                        f'<img src="{logo_url}" '
+                        f'alt="" width="24" height="24" '
+                        f'style="object-fit:contain; '
+                        f'vertical-align:middle; margin-right:6px;">'
+                        f'{safe_value}'
+                    )
+                else:
+                    cell_content = safe_value
+
+                cells_html += (
+                    f'<td style="text-align:center; padding:8px; '
+                    f'border-bottom:1px solid #888;">'
+                    f'{cell_content}</td>'
+                )
+
             rows_html += f"<tr>{cells_html}</tr>"
+
 
         table_html = f"""
         <div style="width:100%; overflow-x:auto;">
