@@ -774,26 +774,7 @@ if "live_completed" in st.session_state:
                     cell_content = safe_value
 
 
-                    if not logo_url:
-                        # Try matching a shortened school name.
-                        matches = [
-                            url for name, url in logo_map.items()
-                            if team_key in name or name in team_key
-                        ]
-                        if len(matches) == 1:
-                            logo_url = matches[0]
-
-
-                    if logo_url:
-                        cell_content = (
-                            f'<img src="{logo_url}" '
-                            f'alt="" width="24" height="24" '
-                            f'style="object-fit:contain; '
-                            f'vertical-align:middle; margin-right:6px;">'
-                            f'{safe_value}'
-                        )
-                    else:
-                        cell_content = safe_value
+                    
                 else:
                     cell_content = safe_value
 
