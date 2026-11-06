@@ -766,63 +766,29 @@ if "live_completed" in st.session_state:
 
                     
                     team_key = team_aliases.get(team_key, team_key)
-                    logo_url = logo_map.get(team_key, "")
                     
-                    logo_aliases = {
-                        "utsa": ["utsa", "texas-san antonio", "utsa roadrunners"],
-                        "southern miss": ["southern miss", "southern miss golden eagles"],
-                        "smu": ["smu", "southern methodist"],
-                        "tcu": ["tcu", "texas christian"],
-                        "tulane": ["tulane"],
-                        "purdue": ["purdue"],
-                        "app state": ["app state", "appalachian state"],
-                        "south carolina": ["south carolina"],
-                        "delaware": ["delaware"],
-                        "merrimack": ["merrimack"],
-                        "troy": ["troy"],
-                        "missouri state": ["missouri state"],
-                        "louisiana": ["louisiana", "louisiana-lafayette"],
-                        "tennessee": ["tennessee"],
-                        "sam houston": ["sam houston", "sam houston state"],
-                        "texas tech": ["texas tech"],
-                        "utep": ["utep", "texas-el paso"],
-                        "wyoming": ["wyoming"],
-                    }
+                    logo_url = logo_map.get(team_key, "")
+
+                    # Normalize team names and match ESPN's available names.
+                    def normalize_team_name(name):
+                        return "".join(
+                            char for char in str(name).lower()
+                            if char.isalnum()
+                        )
 
                     if not logo_url:
-                        for alias in logo_aliases.get(team_key, []):
-                            logo_url = logo_map.get(alias.lower(), "")
-                            if logo_url:
-                                break
-
-
-                    if not logo_url:
-                        # Try matching the school's name without its mascot.
-                        short_names = {
-                            "utep": "texas el paso",
-                            "smu": "southern methodist",
-                            "south carolina": "south carolina",
-                            "utsa": "texas san antonio",
-                            "southern miss": "southern mississippi",
-                            "tcu": "texas christian",
-                            "lsu": "louisiana state",
-                            "ucf": "central florida",
-                            "ole miss": "mississippi",
-                            "miami": "miami",
-                            "app state": "appalachian state",
-                            "sam houston": "sam houston state",
-                            "louisiana": "louisiana",
-                        }
-
-                        search_name = short_names.get(team_key, team_key)
+                        normalized_key = normalize_team_name(team_key)
 
                         matches = [
                             url for name, url in logo_map.items()
-                            if search_name in name
+                            if normalize_team_name(name) == normalized_key
+                            or normalized_key in normalize_team_name(name)
                         ]
 
+                        # Use a partial match only when it identifies one logo.
                         if len(matches) == 1:
                             logo_url = matches[0]
+
 
                         
 
