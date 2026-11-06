@@ -362,9 +362,11 @@ except Exception as error:
 
 st.subheader("Live College Football Data")
 
-if st.button("Fetch current season games"):
+
+# Automatically fetch current-season games when the app first loads.
+if "live_completed" not in st.session_state or "live_upcoming" not in st.session_state:
     try:
-        with st.spinner("Fetching games from CollegeFootballData..."):
+        with st.spinner("Loading current-season games..."):
             live_completed, live_upcoming = fetch_current_season_games()
 
             st.session_state["live_completed"] = live_completed
@@ -375,6 +377,22 @@ if st.button("Fetch current season games"):
 
     except Exception as error:
         st.error(f"Could not fetch live games: {error}")
+
+# Keep a manual refresh button as a backup.
+if st.button("Refresh current season games"):
+    try:
+        with st.spinner("Refreshing games from CollegeFootballData..."):
+            live_completed, live_upcoming = fetch_current_season_games()
+
+            st.session_state["live_completed"] = live_completed
+            st.session_state["live_upcoming"] = live_upcoming
+            st.session_state["live_fetch_time"] = datetime.now().strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+
+    except Exception as error:
+        st.error(f"Could not refresh live games: {error}")
+
 
 
 if "live_completed" in st.session_state:
