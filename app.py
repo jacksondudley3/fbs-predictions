@@ -749,13 +749,38 @@ if "live_completed" in st.session_state:
                         "ucla": "ucla bruins",
                     }
 
+                    
                     team_key = team_aliases.get(team_key, team_key)
                     logo_url = logo_map.get(team_key, "")
 
                     if not logo_url:
+                        # Try matching the school's name without its mascot.
+                        short_names = {
+                            "utep": "texas el paso",
+                            "smu": "southern methodist",
+                            "south carolina": "south carolina",
+                            "utsa": "texas san antonio",
+                            "southern miss": "southern mississippi",
+                            "tcu": "texas christian",
+                            "lsu": "louisiana state",
+                            "ucf": "central florida",
+                            "ole miss": "mississippi",
+                            "miami": "miami",
+                            "app state": "appalachian state",
+                            "sam houston": "sam houston state",
+                            "louisiana": "louisiana",
+                        }
+
+                        search_name = short_names.get(team_key, team_key)
+
                         matches = [
                             url for name, url in logo_map.items()
-                            if team_key in name or name in team_key
+                            if search_name in name
+                        ]
+
+                        if len(matches) == 1:
+                            logo_url = matches[0]
+
                         ]
                         if len(matches) == 1:
                             logo_url = matches[0]
