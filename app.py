@@ -781,9 +781,7 @@ if "live_completed" in st.session_state:
                         if len(matches) == 1:
                             logo_url = matches[0]
 
-                        ]
-                        if len(matches) == 1:
-                            logo_url = matches[0]
+                        
 
                     if logo_url:
                         cell_content = (
