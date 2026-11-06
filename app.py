@@ -496,6 +496,27 @@ if "live_completed" in st.session_state:
                 .dt.tz_convert("America/New_York")
                 .dt.strftime("%a, %b %-d • %-I:%M %p ET")
             )
+        
+        # Filter upcoming games by week.
+        if not upcoming_display.empty and "week" in upcoming_display.columns:
+            available_weeks = sorted(
+                upcoming_display["week"].dropna().unique()
+            )
+
+            if available_weeks:
+                default_week = available_weeks[0]
+
+                selected_week = st.selectbox(
+                    "Select Week",
+                    options=available_weeks,
+                    index=0,
+                    format_func=lambda week: f"Week {int(week)}",
+                    key="upcoming_week_selector",
+                )
+
+                upcoming_display = upcoming_display[
+                    upcoming_display["week"] == selected_week
+                ].copy()
 
 
         # Calculate a prediction for every scheduled game.
