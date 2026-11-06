@@ -574,28 +574,40 @@ if "live_completed" in st.session_state:
         
         
         
-        styled_upcoming = (
+        
+        # Build a table with centered headers and cell contents.
+        table_data = (
             upcoming_display[display_columns]
             .rename(columns=display_names)
             .reset_index(drop=True)
-            .style
-            .hide(axis="index")
-            .set_properties(**{
-                "text-align": "center",
-                "vertical-align": "middle",
-            })
-            .set_table_styles([
-                {
-                    "selector": "th",
-                    "props": [
-                        ("text-align", "center"),
-                        ("vertical-align", "middle"),
-                    ],
-                }
-            ])
         )
 
-        st.table(styled_upcoming)
+        header_html = "".join(
+            f'<th style="text-align:center; padding:8px; '
+            f'border-bottom:1px solid #888;">{column}</th>'
+            for column in table_data.columns
+        )
+
+        rows_html = ""
+        for _, row in table_data.iterrows():
+            cells_html = "".join(
+                f'<td style="text-align:center; padding:8px; '
+                f'border-bottom:1px solid #888;">{value}</td>'
+                for value in row
+            )
+            rows_html += f"<tr>{cells_html}</tr>"
+
+        table_html = f"""
+        <div style="width:100%; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead><tr>{header_html}</tr></thead>
+                <tbody>{rows_html}</tbody>
+            </table>
+        </div>
+        """
+
+        st.html(table_html)
+
 
 
 
