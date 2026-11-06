@@ -628,6 +628,7 @@ if "live_completed" in st.session_state:
         # ESPN logo URLs using ESPN's college football team identifiers.
         
         
+        
         @st.cache_data(ttl=86400)
         def get_team_logo_map():
             try:
@@ -644,31 +645,39 @@ if "live_completed" in st.session_state:
 
                 for item in payload.get("sports", []):
                     for league in item.get("leagues", []):
-                        for team in league.get("teams", []):
-                            team_info = team.get("team", {})
-                            logos = team_info.get("logos", [])
+                        for entry in league.get("teams", []):
+                            team = entry.get("team", {})
+                            logos = team.get("logos", [])
+                            logo_url = (
+                                logos[0].get("href", "")
+                                if logos else ""
+                            )
 
-                            if not logos:
-                                continue
-
-                            logo_url = logos[0].get("href", "")
                             if not logo_url:
                                 continue
 
-                            # Index each team by all available ESPN names.
                             names = [
-                                team_info.get("displayName"),
-                                team_info.get("name"),
-                                team_info.get("shortDisplayName"),
-                                team_info.get("abbreviation"),
-                                team_info.get("location"),
+                                team.get("displayName"),
+                                team.get("name"),
+                                team.get("shortDisplayName"),
+                                team.get("abbreviation"),
+                                team.get("location"),
+                                team.get("nickname"),
                             ]
 
                             for name in names:
                                 if name:
                                     logo_map[name.strip().lower()] = logo_url
 
+                            team_id = team.get("id")
+                            if team_id:
+                                logo_map[f"id:{team_id}"] = logo_url
+
                 return logo_map
+
+            except (requests.exceptions.RequestException, ValueError):
+                return {}
+
 
             except (requests.exceptions.RequestException, ValueError):
                 return {}
