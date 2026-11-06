@@ -338,7 +338,7 @@ def predict_matchup(team_a, team_b, ratings, games):
 # ----------------------------
 # Main dashboard
 # ----------------------------
-st.title("🏈 FBS Power Ratings")
+st.title("Dash's Model 🏈")
 st.caption(
     "Historical Elo-style ratings and neutral-site matchup estimates. "
     "This is an initial baseline model, not an official ranking."
