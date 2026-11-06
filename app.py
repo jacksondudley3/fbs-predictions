@@ -573,10 +573,14 @@ if "live_completed" in st.session_state:
         
         
         
-        st.table(
+        
+        styled_upcoming = (
             upcoming_display[display_columns]
             .rename(columns=display_names)
-            .style.set_properties(**{
+            .reset_index(drop=True)
+            .style
+            .hide(axis="index")
+            .set_properties(**{
                 "text-align": "center",
                 "vertical-align": "middle",
             })
@@ -590,6 +594,9 @@ if "live_completed" in st.session_state:
                 }
             ])
         )
+
+        st.table(styled_upcoming)
+
 
 
 
