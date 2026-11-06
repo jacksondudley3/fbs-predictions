@@ -774,11 +774,6 @@ if "live_completed" in st.session_state:
                     cell_content = safe_value
 
 
-                    
-                else:
-                    cell_content = safe_value
-
-
                 cells_html += (
                     f'<td style="text-align:center; padding:8px; '
                     f'border-bottom:1px solid #888;">'
