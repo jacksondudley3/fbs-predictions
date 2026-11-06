@@ -524,7 +524,11 @@ if "live_completed" in st.session_state:
             return pd.Series({
                 "Predicted Away Score": max(0, away_score),
                 "Predicted Home Score": max(0, home_score),
-                "Projected Spread (Home)": round(projected_margin, 1),
+                "Projected Spread (Home)": (
+    f"{home} -{abs(projected_margin):.1f}"
+    if projected_margin >= 0
+    else f"{away} -{abs(projected_margin):.1f}"
+),
                 "Home Win Probability": f"{home_prob:.1%}",
                 "Predicted Winner": home if home_prob >= 0.5 else away,
             })
