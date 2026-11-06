@@ -85,12 +85,15 @@ def load_games(file_modified_time):
 # Try to obtain the FBS team list
 # ----------------------------
 @st.cache_data(ttl=3600)
-def get_fbs_teams():
-    try:
-        api_key = st.secrets.get("CFBD_API_KEY", "")
-        if not api_key:
-            return None
 
+def get_fbs_teams():
+    api_key = st.secrets.get("CFBD_API_KEY", "")
+
+    if not api_key:
+        st.warning("CFBD_API_KEY is missing from Streamlit Secrets.")
+        return None
+
+    try:
         response = requests.get(
             f"{CFBD_BASE_URL}/teams/fbs",
             headers={"Authorization": f"Bearer {api_key}"},
@@ -100,14 +103,30 @@ def get_fbs_teams():
         payload = response.json()
 
         names = {
-            item.get("school")
+            item["school"]
             for item in payload
             if isinstance(item, dict) and item.get("school")
         }
 
-        return names or None
-    except Exception:
+        if not names:
+            st.warning("The API returned no FBS team names.")
+            return None
+
+        return names
+
+    except requests.exceptions.RequestException as error:
+        st.warning(
+            f"Could not retrieve FBS teams from CollegeFootballData "
+            f"({type(error).__name__}). Check your API key and API access."
+        )
         return None
+
+    except (ValueError, TypeError) as error:
+        st.warning(
+            f"Could not read the FBS team response ({type(error).__name__})."
+        )
+        return None
+
 
 
 from datetime import datetime
