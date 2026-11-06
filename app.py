@@ -628,45 +628,37 @@ if "live_completed" in st.session_state:
         # ESPN logo URLs using ESPN's college football team identifiers.
         
         @st.cache_data(ttl=86400)
+        
+        @st.cache_data(ttl=86400)
         def get_team_logo_map():
+            api_key = st.secrets.get("CFBD_API_KEY", "")
+
+            if not api_key:
+                return {}
+
             try:
                 response = requests.get(
-                    "https://site.api.espn.com/apis/site/v2/sports/"
-                    "football/college-football/teams",
-                    params={"limit": 500},
+                    f"{CFBD_BASE_URL}/teams/fbs",
+                    headers={"Authorization": f"Bearer {api_key}"},
                     timeout=15,
                 )
                 response.raise_for_status()
-                payload = response.json()
+                teams = response.json()
 
                 logo_map = {}
 
-                for item in payload.get("sports", []):
-                    for league in item.get("leagues", []):
-                        for team in league.get("teams", []):
-                            team_info = team.get("team", {})
-                            name = team_info.get("displayName")
-                            logos = team_info.get("logos", [])
+                for team in teams:
+                    school = team.get("school", "").strip().lower()
+                    logos = team.get("logos") or []
 
-                            if name and logos:
-                                logo_url = logos[0].get("href", "")
-                                if logo_url:
-                                    logo_map[name.strip().lower()] = logo_url
+                    if school and logos:
+                        logo_map[school] = logos[0]
 
                 return logo_map
 
             except (requests.exceptions.RequestException, ValueError):
                 return {}
 
-
-            slug = team_slugs.get(str(team_name).strip())
-
-            if not slug:
-                return ""
-
-            return (
-                f"https://a.espncdn.com/i/teamlogos/ncaa/500/{slug}.png"
-            )
 
 
         header_html = "".join(
