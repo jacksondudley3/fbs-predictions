@@ -621,6 +621,19 @@ if "live_completed" in st.session_state:
             .rename(columns=display_names)
             .reset_index(drop=True)
         )
+        
+        # ESPN logo URLs for college football teams.
+        def get_team_logo_url(team_name):
+            import re
+
+            slug = re.sub(
+                r"[^a-z0-9]+", "",
+                str(team_name).lower()
+            )
+
+            return (
+                f"https://a.espncdn.com/i/teamlogos/ncaa/500/{slug}.png"
+            )
 
         header_html = "".join(
             f'<th style="text-align:center; padding:8px; '
