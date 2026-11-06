@@ -649,9 +649,9 @@ if "live_completed" in st.session_state:
                             logos = team_info.get("logos", [])
 
                             if name and logos:
-    logo_url = logos[0].get("href", "")
-    if logo_url:
-        logo_map[name.strip().lower()] = logo_url
+                                logo_url = logos[0].get("href", "")
+                                if logo_url:
+                                    logo_map[name.strip().lower()] = logo_url
 
                 return logo_map
 
