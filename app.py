@@ -758,6 +758,34 @@ if "live_completed" in st.session_state:
                     
                     team_key = team_aliases.get(team_key, team_key)
                     logo_url = logo_map.get(team_key, "")
+                    
+                    logo_aliases = {
+                        "utsa": ["utsa", "texas-san antonio", "utsa roadrunners"],
+                        "southern miss": ["southern miss", "southern miss golden eagles"],
+                        "smu": ["smu", "southern methodist"],
+                        "tcu": ["tcu", "texas christian"],
+                        "tulane": ["tulane"],
+                        "purdue": ["purdue"],
+                        "app state": ["app state", "appalachian state"],
+                        "south carolina": ["south carolina"],
+                        "delaware": ["delaware"],
+                        "merrimack": ["merrimack"],
+                        "troy": ["troy"],
+                        "missouri state": ["missouri state"],
+                        "louisiana": ["louisiana", "louisiana-lafayette"],
+                        "tennessee": ["tennessee"],
+                        "sam houston": ["sam houston", "sam houston state"],
+                        "texas tech": ["texas tech"],
+                        "utep": ["utep", "texas-el paso"],
+                        "wyoming": ["wyoming"],
+                    }
+
+                    if not logo_url:
+                        for alias in logo_aliases.get(team_key, []):
+                            logo_url = logo_map.get(alias.lower(), "")
+                            if logo_url:
+                                break
+
 
                     if not logo_url:
                         # Try matching the school's name without its mascot.
