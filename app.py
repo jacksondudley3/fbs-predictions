@@ -566,11 +566,13 @@ if "live_completed" in st.session_state:
             if col in upcoming_display.columns
         ]
 
+        
         st.dataframe(
-            upcoming_display[display_columns],
+            upcoming_display[display_columns].rename(columns=display_names),
             use_container_width=True,
             hide_index=True,
         )
+
 
 
 
