@@ -626,29 +626,38 @@ if "live_completed" in st.session_state:
         # ESPN logo URLs for college football teams.
         
         # ESPN logo URLs using ESPN's college football team identifiers.
-        def get_team_logo_url(team_name):
-            team_slugs = {
-                "Alabama": "alabama",
-                "Auburn": "auburn",
-                "Clemson": "clemson",
-                "Florida": "florida",
-                "Florida State": "florida-state",
-                "Georgia": "georgia",
-                "LSU": "lsu",
-                "Michigan": "michigan",
-                "Michigan State": "michigan-state",
-                "Notre Dame": "notre-dame",
-                "Ohio State": "ohio-state",
-                "Oklahoma": "oklahoma",
-                "Oregon": "oregon",
-                "Penn State": "penn-state",
-                "Tennessee": "tennessee",
-                "Texas": "texas",
-                "Texas A&M": "texas-am",
-                "USC": "usc",
-                "Washington": "washington",
-                "Wisconsin": "wisconsin",
-            }
+        
+        @st.cache_data(ttl=86400)
+        def get_team_logo_map():
+            try:
+                response = requests.get(
+                    "https://site.api.espn.com/apis/site/v2/sports/"
+                    "football/college-football/teams",
+                    params={"limit": 500},
+                    timeout=15,
+                )
+                response.raise_for_status()
+                payload = response.json()
+
+                logo_map = {}
+
+                for item in payload.get("sports", []):
+                    for league in item.get("leagues", []):
+                        for team in league.get("teams", []):
+                            team_info = team.get("team", {})
+                            name = team_info.get("displayName")
+                            logos = team_info.get("logos", [])
+
+                            if name and logos:
+                                logo_map[name.strip().lower()] = (
+                                    logos[0].get("href", "")
+                                )
+
+                return logo_map
+
+            except (requests.exceptions.RequestException, ValueError):
+                return {}
+
 
             slug = team_slugs.get(str(team_name).strip())
 
