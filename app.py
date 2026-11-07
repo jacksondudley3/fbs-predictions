@@ -555,7 +555,7 @@ if "live_completed" in st.session_state:
             home_prob = 1 / (1 + 10 ** (-rating_diff / 400))
 
             # Convert the rating difference to a rough projected margin.
-            projected_margin = rating_diff / 25
+            projected_margin = rating_diff / 20
 
             # Estimate total points using a simple baseline.
             projected_total = 48
