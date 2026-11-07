@@ -580,7 +580,7 @@ if "live_completed" in st.session_state:
 
 
         # Calculate a prediction for every scheduled game.
-        def predict_game(row):
+        def predict_game(row, fcs_teams):
             home = str(row["home_team"]).strip()
             away = str(row["away_team"]).strip()
 
@@ -629,7 +629,10 @@ if "live_completed" in st.session_state:
                 "Predicted Winner": home if home_prob >= 0.5 else away,
             })
 
-        predictions = upcoming_display.apply(predict_game, axis=1)
+        predictions = upcoming_display.apply(
+            lambda row: predict_game(row, fcs_teams),
+            axis=1
+        )
         upcoming_display = pd.concat(
             [upcoming_display, predictions], axis=1
         )
