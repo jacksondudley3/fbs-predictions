@@ -697,7 +697,7 @@ if "live_completed" in st.session_state:
             })
 
         predictions = upcoming_display.apply(
-            lambda row: predict_game(row, fcs_teams),
+            lambda row: predict_game(row, fcs_teams, game_odds),
             axis=1
         )
         upcoming_display = pd.concat(
