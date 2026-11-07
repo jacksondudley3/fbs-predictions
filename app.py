@@ -170,6 +170,63 @@ def get_fcs_teams():
         return set()
 
 
+@st.cache_data(ttl=900)
+def get_cfb_odds():
+    api_key = st.secrets.get("ODDS_API_KEY", "")
+
+    if not api_key:
+        return {}
+
+    url = "https://api.the-odds-api.com/v4/sports/americanfootball_ncaaf/odds"
+
+    params = {
+        "apiKey": api_key,
+        "regions": "us",
+        "markets": "totals,spreads",
+        "oddsFormat": "american",
+    }
+
+    try:
+        response = requests.get(url, params=params, timeout=20)
+        response.raise_for_status()
+        games = response.json()
+
+        odds_by_matchup = {}
+
+        for game in games:
+            home = game.get("home_team", "").strip().lower()
+            away = game.get("away_team", "").strip().lower()
+
+            totals = []
+            spreads = []
+
+            for bookmaker in game.get("bookmakers", []):
+                for market in bookmaker.get("markets", []):
+                    if market.get("key") == "totals":
+                        for outcome in market.get("outcomes", []):
+                            if outcome.get("name") == "Over":
+                                totals.append(outcome.get("point"))
+
+                    elif market.get("key") == "spreads":
+                        for outcome in market.get("outcomes", []):
+                            if outcome.get("name") == home:
+                                spreads.append(outcome.get("point"))
+
+            odds_by_matchup[(away, home)] = {
+                "total": (
+                    sum(totals) / len(totals) if totals else None
+                ),
+                "home_spread": (
+                    sum(spreads) / len(spreads) if spreads else None
+                ),
+            }
+
+        return odds_by_matchup
+
+    except (requests.exceptions.RequestException, ValueError):
+        return {}
+
+
 from datetime import datetime
 
 
