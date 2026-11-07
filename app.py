@@ -635,6 +635,7 @@ if "live_completed" in st.session_state:
                     upcoming_display["week"] == selected_week
                 ].copy()
 
+game_odds = get_cfb_odds()
 
         # Calculate a prediction for every scheduled game.
         fcs_teams = get_fcs_teams() or set()
@@ -967,7 +968,6 @@ if rankings.empty:
     st.stop()
 
 fbs_teams = get_fbs_teams()
-
 fcs_teams = get_fcs_teams()
 
 game_odds = get_cfb_odds()
