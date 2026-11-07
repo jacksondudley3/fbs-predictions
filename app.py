@@ -885,6 +885,8 @@ if rankings.empty:
 
 fbs_teams = get_fbs_teams()
 
+fcs_teams = get_fcs_teams()
+
 if fbs_teams:
     rankings = rankings[rankings["Team"].isin(fbs_teams)].copy()
     st.caption("FBS filter: using the CollegeFootballData team list.")
