@@ -970,7 +970,7 @@ if rankings.empty:
 fbs_teams = get_fbs_teams()
 fcs_teams = get_fcs_teams()
 
-game_odds = get_cfb_odds()
+
 st.caption(f"Odds API: loaded odds for {len(game_odds)} games.")
 
 if fbs_teams:
