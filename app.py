@@ -586,8 +586,21 @@ if "live_completed" in st.session_state:
 
             FCS_BASE_RATING = 1250
 
-            home_rating = rating_lookup.get(home, FCS_BASE_RATING)
-            away_rating = rating_lookup.get(away, FCS_BASE_RATING)
+            
+            home_key = home.strip().lower()
+            away_key = away.strip().lower()
+
+            FCS_BASE_RATING = 1250
+
+            home_rating = rating_lookup.get(home, START_RATING)
+            away_rating = rating_lookup.get(away, START_RATING)
+
+            if home_key in fcs_teams:
+                home_rating = FCS_BASE_RATING
+
+            if away_key in fcs_teams:
+                away_rating = FCS_BASE_RATING
+
 
             neutral = bool(row.get("neutral_site", False))
             home_edge = 0 if neutral else HOME_ADVANTAGE_ELO
