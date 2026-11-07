@@ -638,6 +638,8 @@ if "live_completed" in st.session_state:
 
         # Calculate a prediction for every scheduled game.
         fcs_teams = get_fcs_teams() or set()
+
+        
         
         def predict_game(row, fcs_teams):
             home = str(row["home_team"]).strip()
@@ -961,6 +963,9 @@ if rankings.empty:
 fbs_teams = get_fbs_teams()
 
 fcs_teams = get_fcs_teams()
+
+game_odds = get_cfb_odds()
+st.caption(f"Odds API: loaded odds for {len(game_odds)} games.")
 
 if fbs_teams:
     rankings = rankings[rankings["Team"].isin(fbs_teams)].copy()
