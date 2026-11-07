@@ -544,8 +544,10 @@ if "live_completed" in st.session_state:
             home = str(row["home_team"]).strip()
             away = str(row["away_team"]).strip()
 
-            home_rating = rating_lookup.get(home, START_RATING)
-            away_rating = rating_lookup.get(away, START_RATING)
+            FCS_BASE_RATING = 1250
+
+            home_rating = rating_lookup.get(home, FCS_BASE_RATING)
+            away_rating = rating_lookup.get(away, FCS_BASE_RATING)
 
             neutral = bool(row.get("neutral_site", False))
             home_edge = 0 if neutral else HOME_ADVANTAGE_ELO
