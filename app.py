@@ -129,6 +129,46 @@ def get_fbs_teams():
         return None
 
 
+def get_fcs_teams():
+    api_key = st.secrets.get("CFBD_API_KEY", "")
+    if not api_key:
+        return set()
+
+    try:
+        response = requests.get(
+            f"{CFBD_BASE_URL}/teams/fbs",
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=15,
+        )
+        response.raise_for_status()
+        fbs_payload = response.json()
+
+        # Get all teams and identify those not classified as FBS.
+        response = requests.get(
+            f"{CFBD_BASE_URL}/teams",
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=15,
+        )
+        response.raise_for_status()
+        all_teams = response.json()
+
+        fbs_names = {
+            team["school"].strip().lower()
+            for team in fbs_payload
+            if isinstance(team, dict) and team.get("school")
+        }
+
+        return {
+            team["school"].strip().lower()
+            for team in all_teams
+            if isinstance(team, dict)
+            and team.get("school")
+            and team["school"].strip().lower() not in fbs_names
+        }
+
+    except (requests.exceptions.RequestException, ValueError, TypeError):
+        return set()
+
 
 from datetime import datetime
 
