@@ -637,9 +637,9 @@ if "live_completed" in st.session_state:
 
 
 
-# Calculate a prediction for every scheduled game.
-fcs_teams = get_fcs_teams() or set()
-game_odds = get_cfb_odds()
+        # Calculate a prediction for every scheduled game.
+        fcs_teams = get_fcs_teams() or set()
+        game_odds = get_cfb_odds()
         
         
         def predict_game(row, fcs_teams, game_odds):
