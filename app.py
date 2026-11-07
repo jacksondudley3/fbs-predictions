@@ -641,7 +641,7 @@ if "live_completed" in st.session_state:
 
         
         
-        def predict_game(row, fcs_teams):
+        def predict_game(row, fcs_teams, game_odds):
             home = str(row["home_team"]).strip()
             away = str(row["away_team"]).strip()
 
