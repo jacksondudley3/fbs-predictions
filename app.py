@@ -674,7 +674,13 @@ if "live_completed" in st.session_state:
             projected_margin = rating_diff / 20
 
             # Estimate total points using a simple baseline.
-            projected_total = 48
+            # Use the betting market's projected total when available.
+            odds_key = (away.strip().lower(), home.strip().lower())
+            market_total = game_odds.get(odds_key, {}).get("total")
+
+            projected_total = (
+                market_total if market_total is not None else 48
+            )
             home_score = round((projected_total + projected_margin) / 2)
             away_score = round((projected_total - projected_margin) / 2)
 
