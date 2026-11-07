@@ -580,6 +580,8 @@ if "live_completed" in st.session_state:
 
 
         # Calculate a prediction for every scheduled game.
+        fcs_teams = get_fcs_teams() or set()
+        
         def predict_game(row, fcs_teams):
             home = str(row["home_team"]).strip()
             away = str(row["away_team"]).strip()
