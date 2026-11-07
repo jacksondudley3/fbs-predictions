@@ -635,11 +635,11 @@ if "live_completed" in st.session_state:
                     upcoming_display["week"] == selected_week
                 ].copy()
 
+
+
+# Calculate a prediction for every scheduled game.
+fcs_teams = get_fcs_teams() or set()
 game_odds = get_cfb_odds()
-
-        # Calculate a prediction for every scheduled game.
-        fcs_teams = get_fcs_teams() or set()
-
         
         
         def predict_game(row, fcs_teams, game_odds):
