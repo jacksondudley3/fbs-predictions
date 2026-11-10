@@ -679,6 +679,11 @@ if "live_completed" in st.session_state:
             odds_key = (away.strip().lower(), home.strip().lower())
             market_total = game_odds.get(odds_key, {}).get("total")
 
+            if market_total is None:
+                st.write("No odds match:", away, "at", home)
+            else:
+                st.write("Odds matched:", away, "at", home, "Total:", market_total)
+
             projected_total = (
                 market_total if market_total is not None else 48
             )
