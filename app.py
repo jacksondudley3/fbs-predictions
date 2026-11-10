@@ -676,7 +676,19 @@ if "live_completed" in st.session_state:
 
             # Estimate total points using a simple baseline.
             # Use the betting market's projected total when available.
-            odds_key = (away.strip().lower(), home.strip().lower())
+            def normalize_team_name(name):
+                return (
+                    str(name)
+                    .lower()
+                    .replace("&", "and")
+                    .replace(".", "")
+                    .replace("'", "")
+                    .replace("-", " ")
+                    .replace("  ", " ")
+                    .strip()
+                )
+
+            odds_key = (normalize_team_name(away), normalize_team_name(home))
             market_total = game_odds.get(odds_key, {}).get("total")
 
             if market_total is None:
