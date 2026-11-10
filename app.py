@@ -171,6 +171,32 @@ def get_fcs_teams():
 
 
 @st.cache_data(ttl=900)
+
+def normalize_team_name(name):
+    name = str(name).strip().lower()
+
+    mascot_words = [
+        " broncos", " zips", " golden flashes", " falcons",
+        " bobcats", " redhawks", " bulls", " cardinals",
+        " hornets", " chippewas", " bulldogs", " tigers",
+        " wildcats", " eagles", " bears", " hawkeyes",
+        "buckeyes", " volunteers", " rebels", " gators",
+        "crimson tide", "fighting irish", "nittany lions",
+        "blue devils", "hurricanes", "seminoles", "wolfpack",
+        "tar heels", "cavaliers", "hokies", "demon deacons",
+        "cougars", "mustangs", "longhorns", "aggies",
+        "sooners", "cowboys", "razorbacks", "gamecocks",
+        "trojans", "hoosiers", "ducks", "utes", "lobos",
+        "wolf pack", "golden gophers", "mountaineers"
+    ]
+
+    for mascot in sorted(mascot_words, key=len, reverse=True):
+        if name.endswith(mascot):
+            name = name[:-len(mascot)].strip()
+            break
+
+    return name
+
 def get_cfb_odds():
     api_key = st.secrets.get("ODDS_API_KEY", "")
 
@@ -194,8 +220,8 @@ def get_cfb_odds():
         odds_by_matchup = {}
 
         for game in games:
-            home = game.get("home_team", "").strip().lower()
-            away = game.get("away_team", "").strip().lower()
+            home = normalize_team_name(game.get("home_team", ""))
+            away = normalize_team_name(game.get("away_team", ""))
 
             totals = []
             spreads = []
